@@ -1,0 +1,134 @@
+body {
+    font-family: "Plus Jakarta Sans", sans-serif !important;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.container {
+    flex: 1;
+}
+
+/**
+* Navbar
+*/
+
+.navbar-brand {
+    color: #fe424d !important;
+    font-weight: bold !important;
+    padding-left: 5px !important;
+}
+.navbar {
+    height: 5rem;
+    background-color: #ffffff;
+}
+
+.fa-airbnb {
+    color : #fe424d;
+    font-size : 2rem;
+}
+
+.nav-link {
+    color : #222222 !important;
+}
+
+
+/* Footer */
+
+.f-info-links a {
+    text-decoration: none;
+    color: #222222;
+}
+
+.f-info-links a:hover {
+    text-decoration: underline;
+}
+
+.f-info {
+    display : flex;
+    text-align: center;
+    background-color: #ebebeb;
+    height: 8rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: space-evenly;
+}
+
+.f-info-links, .f-info-socials, .f-info-brand {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.f-info-socials i {
+    font-size: 1.5rem;
+    margin-right: 1rem;
+}
+
+/* cards */
+
+.card {
+    border: none !important;
+    margin-bottom: 2rem;
+}
+
+.card-img-top {
+    border-radius: 1rem !important;
+    width: 100% !important;
+    object-fit: cover !important;
+}
+
+.card-body {
+    padding: 6px !important;
+}
+
+.card-text {
+    font-weight: 400 !important;
+}
+
+.card-title {
+    font-weight: bold !important;
+}
+
+.listing-links {
+    text-decoration: none;
+}
+
+/* Cards Effects */
+.card-img-overlay {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.card-img-overlay i {
+    font-size: 1.4rem;
+    color: white;
+    /* background-color: #222222; */
+    border-radius: 1px;
+}
+
+.fa-heart {
+    position: absolute;
+    top: 30px;
+    right: 25px;
+    display: inline-block;
+}
+
+.add-btn, .edit-btn {
+    background-color : #fe424d !important;
+    border: none !important;
+}
+
+/* Show page */
+
+.show-img {
+    height: 30vh;
+}
+
+/* show route */
+
+.btns {
+    display: flex;
+}
