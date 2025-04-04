@@ -54,6 +54,10 @@ body {
     align-items: space-evenly;
 }
 
+.f-info-links a {
+    margin-right: 1rem;
+}
+
 .f-info-links, .f-info-socials, .f-info-brand {
     width: 100%;
     display: flex;

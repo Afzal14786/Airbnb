@@ -6,6 +6,8 @@ const methodOverride = require("method-override");
 const dbPath = "mongodb://127.0.0.1:27017/airbnb";
 const Listing = require("./models/listing.js");
 const ejsMate = require("ejs-mate");
+const wrapAsync = require("./utils/wrapAsync.js");
+const customErr = require("./utils/Errs.js");
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
@@ -37,10 +39,10 @@ app.get("/", (req, res)=> {
 /**
  *      index route             GET         /listings
  */
-app.get("/listings", async (req, res)=> {
+app.get("/listings", wrapAsync(async (req, res)=> {
     let allListings = await Listing.find({});
     res.render("./listings/index.ejs", {allListings});
-});
+}));
 
 
 /**
@@ -54,21 +56,24 @@ app.get("/listings/new", (req, res) => {
     res.render("./listings/new.ejs");
 });
 
-app.post("/listings", async (req, res)=> {
+app.post("/listings", wrapAsync(async (req, res, next)=> {  
+    if (!req.body.listing) {
+        throw new customErr(400, "Please Send Valid Data For Listing");
+    }
     let newListing = new Listing(req.body.listing);
     await newListing.save();
     res.redirect("/listings");
-});
+}));
 
 /**
  *      show route          GET         /listings/:id
  *      this route shows individual property's profile .
  */
-app.get("/listings/:id", async (req, res)=> {
+app.get("/listings/:id", wrapAsync(async (req, res)=> {
     let {id} = req.params;
     const list = await Listing.findById(id);
     res.render("./listings/show.ejs", {list});
-});
+}));
 
 
 
@@ -80,29 +85,29 @@ app.get("/listings/:id", async (req, res)=> {
  */
 
 // edit route 
-app.get("/listings/:id/edit", async (req, res)=> {
+app.get("/listings/:id/edit",  wrapAsync(async (req, res)=> {
     let {id} = req.params;
     const listing = await Listing.findById(id);
     res.render("./listings/edit.ejs", {listing});
-});
+}));
 
 // update route 
 
-app.put("/listings/:id", async (req, res)=> {
+app.put("/listings/:id", wrapAsync(async (req, res)=> {
     let {id} = req.params;
     await Listing.findByIdAndUpdate(id, req.body.listing);
     res.redirect(`/listings`);
-});
+}));
 
 
 // implement DELETE Route           "/listings/:id"
 
-app.delete("/listings/:id", async (req, res)=> {
+app.delete("/listings/:id", wrapAsync(async (req, res)=> {
     let {id} = req.params;
     let deletedListing = await Listing.findByIdAndDelete(id);
     console.log(deletedListing);
     res.redirect("/listings");
-});
+}));
 
 
 
@@ -140,8 +145,24 @@ app.delete("/listings/:id", async (req, res)=> {
 //     res.send("Added to listing successfully . . .");
 // });
 
+
+/**
+ * Handling Error 
+ */
+
+
+// It handles all the errors if any of the API path is not match . . .
+app.all("*", ( req, res, next)=> {
+    next(new customErr(404, "Page Not Found"));
+});
+
+app.use((err, req, res, next)=> {
+    let{status = 500, message = "Something Damaged"} = err;
+    res.status(status).send(message);
+});
+
 // ---------------------------------------------------------------------------------------
 // start the server //
 app.listen(8000, ()=> {
     console.log("Listining to port : 8000");
-})
+});
