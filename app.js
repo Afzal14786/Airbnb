@@ -8,6 +8,7 @@ const Listing = require("./models/listing.js");
 const ejsMate = require("ejs-mate");
 const wrapAsync = require("./utils/wrapAsync.js");
 const customErr = require("./utils/Errs.js");
+const listingSchema = require("./schema.js");;
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
@@ -30,11 +31,23 @@ main().then(()=> {
 async function main() {
     await mongoose.connect(dbPath);
 }
+
+const validateListing = (req, res, next)=> {
+    let {error} = listingSchema.validate(req.body);
+    if (error) {
+        let errMsg = error.details.map((el)=> el.message).join(",");
+        throw new customErr(400, errMsg);
+    } else {
+        next();
+    }
+}
+
 // ---------------------------------------------------------------------------------------
 
 app.get("/", (req, res)=> {
     res.send("Server is running fine . . .");
 });
+
 
 /**
  *      index route             GET         /listings
@@ -56,10 +69,7 @@ app.get("/listings/new", (req, res) => {
     res.render("./listings/new.ejs");
 });
 
-app.post("/listings", wrapAsync(async (req, res, next)=> {  
-    if (!req.body.listing) {
-        throw new customErr(400, "Please Send Valid Data For Listing");
-    }
+app.post("/listings", validateListing, wrapAsync(async (req, res, next)=> {  
     let newListing = new Listing(req.body.listing);
     await newListing.save();
     res.redirect("/listings");
@@ -85,7 +95,7 @@ app.get("/listings/:id", wrapAsync(async (req, res)=> {
  */
 
 // edit route 
-app.get("/listings/:id/edit",  wrapAsync(async (req, res)=> {
+app.get("/listings/:id/edit", wrapAsync(async (req, res)=> {
     let {id} = req.params;
     const listing = await Listing.findById(id);
     res.render("./listings/edit.ejs", {listing});
@@ -93,7 +103,7 @@ app.get("/listings/:id/edit",  wrapAsync(async (req, res)=> {
 
 // update route 
 
-app.put("/listings/:id", wrapAsync(async (req, res)=> {
+app.put("/listings/:id", validateListing, wrapAsync(async (req, res)=> {
     let {id} = req.params;
     await Listing.findByIdAndUpdate(id, req.body.listing);
     res.redirect(`/listings`);
