@@ -8,7 +8,8 @@ const Listing = require("./models/listing.js");
 const ejsMate = require("ejs-mate");
 const wrapAsync = require("./utils/wrapAsync.js");
 const customErr = require("./utils/Errs.js");
-const listingSchema = require("./schema.js");;
+const {listingSchema, reviewSchema} = require("./schema.js");
+const Review = require("./models/review.js");
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
@@ -36,6 +37,16 @@ const validateListing = (req, res, next)=> {
     let {error} = listingSchema.validate(req.body);
     if (error) {
         let errMsg = error.details.map((el)=> el.message).join(",");
+        throw new customErr(400, errMsg);
+    } else {
+        next();
+    }
+}
+
+const validateReview = (req, res, next)=> {
+    let {error} = reviewSchema.validate(req.body);
+    if (error) {
+        let newErr = error.details.map((el)=> el.message).join(",");
         throw new customErr(400, errMsg);
     } else {
         next();
@@ -119,7 +130,23 @@ app.delete("/listings/:id", wrapAsync(async (req, res)=> {
     res.redirect("/listings");
 }));
 
+/**
+ * Now let's add the review into the database .
+ */
 
+// validate review is passed to validate the review from client side . . . 
+
+app.post("/listings/:id/reviews", validateReview, async (req, res)=> {
+    let {id} = req.params;
+    let listing = await Listing.findById(id);
+    let newReview = new Review(req.body.review);
+
+    listing.reviews.push(newReview);
+    await newReview.save();
+    await listing.save();
+
+    res.send("Review Added Successfully . . .");
+});
 
 
 
