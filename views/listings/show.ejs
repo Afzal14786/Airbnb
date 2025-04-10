@@ -6,7 +6,7 @@
             <h2><%= list.title %></h2>
         </div>
 
-            <div class="card col-6 offset-3 show-card">
+            <div class="card card-listing col-6 offset-3 show-card">
                 <img src="<%= list.image %>" class="card-img-top show-img" alt="listing-image">
 
                 <div class="card-body">
@@ -27,13 +27,6 @@
                 </form>
             </div>
 
-            <!-- Creating a review card, after submitting the reviews were visible  -->
-
-            <!-- 
-                # implement the design soon so it will updated 
-            -->
-            
-
             <!-- Creating Review Section -->
              
             <div class="col-8 offset-3 mb-3 mt-3">
@@ -52,6 +45,27 @@
                     </div>
                     <button class="btn btn-outline-dark">Submit</button>
                 </form>
+            </div>
+
+
+            <!-- Creating a review card, after submitting the reviews were visible  -->
+
+            <!-- 
+                # implement the design soon so it will updated 
+            -->
+            
+            <!-- Reviews render here -->
+            <p><b>All Reviews</b></p>
+            <div class="row col-12">
+                <% for (review of list.reviews) { %>
+                    <div class="card col-5 ms-3 mb-3 pt-2">
+                        <div class="card-body">
+                          <h5 class="card-title">Md Afzal</h5>
+                          <p class="card-text"> <%= review.comment %> </p>
+                          <p class="card-text"> <%= review.rating%> stars </p>
+                        </div>
+                    </div>
+                <% } %>
             </div>
     </div>
 </body>

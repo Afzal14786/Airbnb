@@ -3,10 +3,11 @@ const Schema = mongoose.Schema;
 const Model = mongoose.model;
 
 let listingSchema = new Schema({
-    title: {
-        type: String,
-        required: true,
+      title: {
+        type : String,
+        required : true
       },
+
       description: String,
       image: {
         type: String,

@@ -1,5 +1,6 @@
 const Joi = require("joi");
 
+// validating the listing schema
 const listingSchema = Joi.object({
     listing : Joi.object({
         title : Joi.string().required(),            // title is required
@@ -11,6 +12,8 @@ const listingSchema = Joi.object({
     }).required()
 });
 
+
+// validating the review object 
 const reviewSchema = Joi.object({
     review : Joi.object({
         rating : Joi.number().required(),
@@ -19,5 +22,7 @@ const reviewSchema = Joi.object({
     }).required()
 });
 
-module.exports = reviewSchema;
-module.exports = listingSchema;
+module.exports = {
+    listingSchema,
+    reviewSchema
+}

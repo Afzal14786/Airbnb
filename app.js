@@ -10,6 +10,7 @@ const wrapAsync = require("./utils/wrapAsync.js");
 const customErr = require("./utils/Errs.js");
 const {listingSchema, reviewSchema} = require("./schema.js");
 const Review = require("./models/review.js");
+const loggerMiddleware = require("./middleware/loggerMiddleware.js");
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
@@ -33,6 +34,7 @@ async function main() {
     await mongoose.connect(dbPath);
 }
 
+
 const validateListing = (req, res, next)=> {
     let {error} = listingSchema.validate(req.body);
     if (error) {
@@ -47,13 +49,15 @@ const validateReview = (req, res, next)=> {
     let {error} = reviewSchema.validate(req.body);
     if (error) {
         let newErr = error.details.map((el)=> el.message).join(",");
-        throw new customErr(400, errMsg);
+        throw new customErr(400, newErr);
+        
     } else {
         next();
     }
 }
 
-// ---------------------------------------------------------------------------------------
+// implementing logger files for tracking the requests at what time . . .
+// app.use(loggerMiddleware);
 
 app.get("/", (req, res)=> {
     res.send("Server is running fine . . .");
@@ -83,6 +87,7 @@ app.get("/listings/new", (req, res) => {
 app.post("/listings", validateListing, wrapAsync(async (req, res, next)=> {  
     let newListing = new Listing(req.body.listing);
     await newListing.save();
+    console.log(`Listing Added Successfully . . . `);
     res.redirect("/listings");
 }));
 
@@ -92,7 +97,7 @@ app.post("/listings", validateListing, wrapAsync(async (req, res, next)=> {
  */
 app.get("/listings/:id", wrapAsync(async (req, res)=> {
     let {id} = req.params;
-    const list = await Listing.findById(id);
+    const list = await Listing.findById(id).populate("reviews");
     res.render("./listings/show.ejs", {list});
 }));
 
@@ -116,7 +121,9 @@ app.get("/listings/:id/edit", wrapAsync(async (req, res)=> {
 
 app.put("/listings/:id", validateListing, wrapAsync(async (req, res)=> {
     let {id} = req.params;
-    await Listing.findByIdAndUpdate(id, req.body.listing);
+    console.log(id);
+    await Listing.findByIdAndUpdate(id, {...req.body.listing});
+    console.log(`Updated Successfully`);
     res.redirect(`/listings`);
 }));
 
@@ -126,6 +133,7 @@ app.put("/listings/:id", validateListing, wrapAsync(async (req, res)=> {
 app.delete("/listings/:id", wrapAsync(async (req, res)=> {
     let {id} = req.params;
     let deletedListing = await Listing.findByIdAndDelete(id);
+    console.log(`------------------------- Deleted Listing -------------------------`)
     console.log(deletedListing);
     res.redirect("/listings");
 }));
@@ -145,7 +153,7 @@ app.post("/listings/:id/reviews", validateReview, async (req, res)=> {
     await newReview.save();
     await listing.save();
 
-    res.send("Review Added Successfully . . .");
+    res.redirect(`/listings/${id}`);
 });
 
 
@@ -189,6 +197,7 @@ app.post("/listings/:id/reviews", validateReview, async (req, res)=> {
 
 
 // It handles all the errors if any of the API path is not match . . .
+
 app.all("*", ( req, res, next)=> {
     next(new customErr(404, "Page Not Found"));
 });
@@ -197,6 +206,7 @@ app.use((err, req, res, next)=> {
     let{status = 500, message = "Something Damaged"} = err;
     res.status(status).send(message);
 });
+
 
 // ---------------------------------------------------------------------------------------
 // start the server //

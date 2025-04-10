@@ -4,7 +4,7 @@
         <div class="row row-cols-lg-4 row-cols-md-3 row-cols-sm-2">
             <% for (let listing of allListings) { %>
                 <a href="/listings/<%= listing._id %>" class="listing-links">
-                    <div class="card">
+                    <div class="card card-listing">
                         <img src="<%= listing.image %>" class="card-img-top" alt="listing-image" style="height:18rem;">
 
                         <!-- // trying to implment heart icon above the listing image so people can like the images or listings -->
