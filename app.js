@@ -12,6 +12,9 @@ const {listingSchema, reviewSchema} = require("./schema.js");
 const Review = require("./models/review.js");
 const loggerMiddleware = require("./middleware/loggerMiddleware.js");
 
+const listing = require(`./routes/listings.js`);
+const reviews = require(`./routes/review.js`);
+
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(express.static(path.join(__dirname, "public")));
@@ -35,166 +38,19 @@ async function main() {
 }
 
 
-const validateListing = (req, res, next)=> {
-    let {error} = listingSchema.validate(req.body);
-    if (error) {
-        let errMsg = error.details.map((el)=> el.message).join(",");
-        throw new customErr(400, errMsg);
-    } else {
-        next();
-    }
-}
-
-const validateReview = (req, res, next)=> {
-    let {error} = reviewSchema.validate(req.body);
-    if (error) {
-        let newErr = error.details.map((el)=> el.message).join(",");
-        throw new customErr(400, newErr);
-        
-    } else {
-        next();
-    }
-}
-
-// implementing logger files for tracking the requests at what time . . .
-// app.use(loggerMiddleware);
-
 app.get("/", (req, res)=> {
     res.send("Server is running fine . . .");
 });
 
+// implementing listing routes
 
-/**
- *      index route             GET         /listings
- */
-app.get("/listings", wrapAsync(async (req, res)=> {
-    let allListings = await Listing.find({});
-    res.render("./listings/index.ejs", {allListings});
-}));
-
-
-/**
- * create route for new listings
- * 
- *      GET             /listings/new           render the form
- *      POST            /listing                submit button and insert all details into DB 
- */
-
-app.get("/listings/new", (req, res) => {
-    res.render("./listings/new.ejs");
-});
-
-app.post("/listings", validateListing, wrapAsync(async (req, res, next)=> {  
-    let newListing = new Listing(req.body.listing);
-    await newListing.save();
-    console.log(`Listing Added Successfully . . . `);
-    res.redirect("/listings");
-}));
-
-/**
- *      show route          GET         /listings/:id
- *      this route shows individual property's profile .
- */
-app.get("/listings/:id", wrapAsync(async (req, res)=> {
-    let {id} = req.params;
-    const list = await Listing.findById(id).populate("reviews");
-    res.render("./listings/show.ejs", {list});
-}));
-
-
-
-/**
- * create UPDATE route for listings
- * 
- *      GET     /listings/:id/edit      render a form for edit
- *      PUT     /listings/:id           submit -> render the updated values in show.ejs
- */
-
-// edit route 
-app.get("/listings/:id/edit", wrapAsync(async (req, res)=> {
-    let {id} = req.params;
-    const listing = await Listing.findById(id);
-    res.render("./listings/edit.ejs", {listing});
-}));
-
-// update route 
-
-app.put("/listings/:id", validateListing, wrapAsync(async (req, res)=> {
-    let {id} = req.params;
-    console.log(id);
-    await Listing.findByIdAndUpdate(id, {...req.body.listing});
-    console.log(`Updated Successfully`);
-    res.redirect(`/listings`);
-}));
-
-
-// implement DELETE Route           "/listings/:id"
-
-app.delete("/listings/:id", wrapAsync(async (req, res)=> {
-    let {id} = req.params;
-    let deletedListing = await Listing.findByIdAndDelete(id);
-    console.log(`------------------------- Deleted Listing -------------------------`)
-    console.log(deletedListing);
-    res.redirect("/listings");
-}));
-
-/**
- * Now let's add the review into the database .
- */
-
-// validate review is passed to validate the review from client side . . . 
-
-app.post("/listings/:id/reviews", validateReview, async (req, res)=> {
-    let {id} = req.params;
-    let listing = await Listing.findById(id);
-    let newReview = new Review(req.body.review);
-
-    listing.reviews.push(newReview);
-    await newReview.save();
-    await listing.save();
-
-    res.redirect(`/listings/${id}`);
-});
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// app.get("/listing", async (req, res)=> {
-//     let sampleListing = new Listing({
-//         title : "My New Home",
-//         description : "Welcome to my new home",
-//         price : 7000,
-//         location : "Kopar Khairane Navi Mumbai 400709",
-//         country : "India"
-//     });
-
-//     await sampleListing.save();
-//     console.log("Sample was saved . . .");
-//     res.send("Added to listing successfully . . .");
-// });
+app.use("/listings", listing);
+app.use("/listings/:id/reviews", reviews);
 
 
 /**
  * Handling Error 
  */
-
 
 // It handles all the errors if any of the API path is not match . . .
 
