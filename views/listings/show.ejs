@@ -11,6 +11,7 @@
 
                 <div class="card-body">
                     <p class="card-text"> <br>
+                        Owned By : <b> <i><%= list.owner.username %></i></b><br>
                         <%= list.description %> <br>
                         &#8377 <%= list.price.toLocaleString(`en-IN`) %> <br>
                         <%= list.location%> <br>
@@ -19,12 +20,14 @@
                 </div>
             </div>
             <br>
-            <div class="btns">
-                <a href="/listings/<%= list._id %>/edit" class="btn btn-dark col-1 offset-3 mb-3 edit-btn">Edit</a>
-                <form action="/listings/<%= list._id %>?_method=Delete" method="post">
-                    <button class="btn btn-dark mb-3 offset-5">Delete</button>
-                </form>
-            </div>
+            <% if(currentUser && currentUser._id.equals(list.owner._id)) { %>
+                <div class="btns">
+                    <a href="/listings/<%= list._id %>/edit" class="btn btn-dark col-1 offset-3 mb-3 edit-btn">Edit</a>
+                    <form action="/listings/<%= list._id %>?_method=Delete" method="post">
+                        <button class="btn btn-dark mb-3 offset-5">Delete</button>
+                    </form>
+                </div>
+            <% } %>
 
             <!-- Creating Review Section -->
              
@@ -60,7 +63,7 @@
                 <% for (review of list.reviews) { %>
                     <div class="card col-5 ms-3 mb-3 pt-2">
                         <div class="card-body">
-                          <h5 class="card-title">Md Afzal</h5>
+                          <h5 class="card-title">Who Post This Comment ?</h5>
                           <p class="card-text"> <%= review.comment %> </p>
                           <p class="card-text"> <%= review.rating%> stars </p>
                         </div>

@@ -11,9 +11,11 @@ const customErr = require("./utils/Errs.js");
 const {listingSchema, reviewSchema} = require("./schema.js");
 const Review = require("./models/review.js");
 const loggerMiddleware = require("./middleware/loggerMiddleware.js");
-
-const listing = require(`./routes/listings.js`);
-const reviews = require(`./routes/review.js`);
+const session = require("express-session");
+const flash = require("connect-flash");
+const passport = require("passport");
+const LoaclStrategy = require("passport-local");
+const User = require("./models/user.js");
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
@@ -23,6 +25,43 @@ app.use(express.urlencoded({extended : true}));
 app.engine('ejs', ejsMate);
 
 
+const sessionOptions = {
+    secret : "mysecretkey",
+    resave : false,
+    saveUninitialized : true,
+    cookie : {
+        expires : Date.now() + 7 * 24 * 60 * 60 * 1000 , // 3 days from now
+        maxAge : 7 * 24 * 60 * 60 * 1000,    // 7 Days 
+        httOnly : true
+    }
+};
+
+
+app.get("/", (req, res)=> {
+    res.send("Server is running fine . . .");
+});
+
+
+app.use(session(sessionOptions));
+app.use(flash())
+
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LoaclStrategy(User.authenticate()));
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
+
+app.use((req, res, next) => {
+    res.locals.success = req.flash("success");
+    res.locals.error = req.flash("error");
+    res.locals.currentUser = req.user;          // currect user session
+    next();
+})
+
+const listingRouter = require(`./routes/listings.js`);
+const reviewsRouter = require(`./routes/review.js`);
+const userRouter = require(`./routes/user.js`);
 /**
  * Set up the mongo db
  */
@@ -37,15 +76,11 @@ async function main() {
     await mongoose.connect(dbPath);
 }
 
-
-app.get("/", (req, res)=> {
-    res.send("Server is running fine . . .");
-});
-
 // implementing listing routes
 
-app.use("/listings", listing);
-app.use("/listings/:id/reviews", reviews);
+app.use("/listings", listingRouter);
+app.use("/listings/:id/reviews", reviewsRouter);
+app.use("/", userRouter);
 
 
 /**
