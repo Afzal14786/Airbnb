@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const initData = require("./data.js");
 const Listing = require("../models/listing.js");
 
-const dbPath = "mongodb://127.0.0.1:27017/airbnb";
+const dbPath = "mongodb://127.0.0.1:27017/rental_platform";
 
 
 main().then(()=> {
